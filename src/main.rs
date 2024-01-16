@@ -26,7 +26,9 @@ fn setup(
     commands.spawn(MaterialMeshBundle {
         mesh: meshes.add(Mesh::from(shape::Cube { size: 10.0 })),
         transform: Transform::from_xyz(0.0, 0.0, 0.0),
-        material: materials.add(CustomMaterial {}),
+        material: materials.add(CustomMaterial {
+            color: Color::WHITE,
+        }),
         ..default()
     });
 
@@ -38,7 +40,10 @@ fn setup(
 }
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
-struct CustomMaterial;
+struct CustomMaterial {
+    #[uniform(0)]
+    color: Color,
+}
 
 impl Material for CustomMaterial {
     fn fragment_shader() -> ShaderRef {
