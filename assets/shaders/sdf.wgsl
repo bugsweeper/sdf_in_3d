@@ -5,8 +5,6 @@
 }
 
 const BOX_SIZE: f32 = 10.0;
-const CAMERA_POSITION: f32 = 10.0;
-const RAY_ORIGIN: vec3f = vec3(0.0, 0.0, CAMERA_POSITION);
 const STEP_COUNT: i32 = 100;
 const FRONT_NORMAL: vec3f = vec3(0.0, 0.0, -1.0);
 const LIGHT_COLOR: vec3f = vec3(1.0, 0.7, 0.5);
@@ -23,6 +21,12 @@ const YELLOW: vec3f = vec3(1.0, 1.0, 0.0);
 const GREEN: vec3f = vec3(0.0, 1.0, 0.0);
 const BLUE: vec3f = vec3(0.0, 0.0, 1.0);
 const VIOLET: vec3f = vec3(1.0, 0.0, 1.0);
+
+struct CustomMaterial {
+    camera_position: vec3f,
+};
+
+@group(1) @binding(0) var<uniform> material: CustomMaterial;
 
 struct ColoredFigure {
     distance: f32,
@@ -144,7 +148,7 @@ fn sdfNormal(point: vec3f) -> vec3f {
 fn processedFigure(point_on_viewport: vec3f, point_ptr: ptr<function, vec3f>, color_ptr: ptr<function, vec3f>, normal_ptr: ptr<function, vec3f>) -> bool {
     var was_on_edge = false;
     var point = point_on_viewport;
-    let ray_direction = normalize(point_on_viewport - RAY_ORIGIN);
+    let ray_direction = normalize(point_on_viewport - material.camera_position);
     for (var i: i32 = 0; i < STEP_COUNT && !was_on_edge && point.z > -BOX_SIZE; i += 1) {
         let figure = sdfCombination(point);
         was_on_edge |= abs(figure.distance) < EPSILON;
@@ -169,7 +173,7 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     let sun_direction = normalize(viewport_top_right);
 
     // brute force aproach
-    let ray_direction = normalize(point_on_viewport - RAY_ORIGIN);
+    let ray_direction = normalize(point_on_viewport - material.camera_position);
     let step_length = BOX_SIZE / f32(STEP_COUNT) / (-ray_direction.z);
     let step = ray_direction * step_length;
     var point = point_on_viewport + step * f32(STEP_COUNT);    // Default value is back wall of box, then the most closer to raRAY_ORIGIN will override
